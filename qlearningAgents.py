@@ -92,7 +92,7 @@ class QLearningAgent(ReinforcementAgent):
           HINT: To pick randomly from a list, use random.choice(list)
         """
 
-        if util.flipCoin(1 - self.epsilon):
+        if util.flipCoin(self.epsilon):
             actions = self.getLegalActions(state)
             return None if not actions else random.choice(actions)
 
