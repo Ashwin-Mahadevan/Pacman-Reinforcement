@@ -64,9 +64,9 @@ class QLearningAgent(ReinforcementAgent):
         """
 
         best_action = self.computeActionFromQValues(state)
-        if not best_action: return 0
+        if best_action is None: return 0
 
-        return self.Q[state, best_action]
+        return self.getQValue(state, best_action)
 
     def computeActionFromQValues(self, state):
         """
@@ -78,7 +78,7 @@ class QLearningAgent(ReinforcementAgent):
         actions = self.getLegalActions(state)
         if not actions: return None
 
-        Q = lambda action: self.Q[state, action]
+        Q = lambda action: self.getQValue(state, action)
         return max(actions, key=Q)
 
     def getAction(self, state):
@@ -110,7 +110,8 @@ class QLearningAgent(ReinforcementAgent):
         future = self.computeValueFromQValues(nextState)
         sample_Q = reward + self.discount * future
 
-        self.Q[state, action] += self.alpha * (sample_Q - self.Q[state, action])
+        self.Q[state,
+               action] += self.alpha * (sample_Q - self.Q[state, action])
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
@@ -176,15 +177,27 @@ class ApproximateQAgent(PacmanQAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        features = self.featExtractor.getFeatures(state, action)
+        return self.weights * features
 
     def update(self, state, action, nextState, reward: float):
         """
            Should update your weights based on transition
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        future = self.computeValueFromQValues(nextState)
+        sample_Q = reward + self.discount * future
+        difference = sample_Q - self.getQValue(state, action)
+
+        features = self.featExtractor.getFeatures(state, action)
+
+        updates = util.Counter()
+
+        for key in features:
+            updates[key] = features[key] * self.alpha * difference
+
+        self.weights += updates
 
     def final(self, state):
         """Called at the end of each game."""
